@@ -1,6 +1,7 @@
 import registerAvalanche from './avalanche';
 import registerBalancer from './balancer';
 import { getBancorData } from './bancor';
+import { getBSCData } from './bsc';
 import registerCoinMetrics from './coinmetrics';
 import registerCompound from './compound';
 import registerCurve from './curve';
@@ -28,6 +29,7 @@ import { getZilliqaData } from './zilliqa';
 export const adapters = [
   getAaveData,
   getBancorData,
+  getBSCData,
   getFutureswapData,
   getOmenData,
   // getPolymarketData,
