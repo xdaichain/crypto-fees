@@ -1,7 +1,7 @@
 import registerAvalanche from './avalanche';
 import registerBalancer from './balancer';
 import { getBancorData } from './bancor';
-import { getBSCData } from './bsc';
+import registerBSC from './bsc';
 import registerCoinMetrics from './coinmetrics';
 import registerCompound from './compound';
 import registerCurve from './curve';
@@ -29,7 +29,6 @@ import { getZilliqaData } from './zilliqa';
 export const adapters = [
   getAaveData,
   getBancorData,
-  getBSCData,
   getFutureswapData,
   getOmenData,
   // getPolymarketData,
@@ -53,6 +52,7 @@ const register = (id: string, query: any, metadata: any) => {
 register0x(register);
 registerAvalanche(register);
 registerBalancer(register);
+registerBSC(register);
 registerCoinMetrics(register);
 registerCompound(register);
 registerCurve(register);
