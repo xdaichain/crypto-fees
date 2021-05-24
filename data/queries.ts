@@ -1,19 +1,29 @@
 import { adapters, queryAdapter, getIDs, getMetadata } from './adapters';
 import { FeeData, ProtocolData } from './types';
 import { getValue as getDBValue, setValue as setDBValue } from './db';
-import { last7Days, isBefore, getDateRange } from './lib/time';
+import { last7Days, isBefore, getDateRange, getYesterdayDate } from './lib/time';
 import { getHistoricalMarketData } from './lib/pricedata';
+
+const SANITY_CHECK = 1000000000; // Values over this will be automatically hidden
 
 async function getValue(protocol: string, attribute: string, date: string) {
   const cachedValue = await getDBValue(protocol, attribute, date);
-  if (cachedValue !== null) {
+  if (cachedValue !== null && cachedValue < SANITY_CHECK) {
     return cachedValue;
   }
   // eslint-disable-next-line no-console
   console.log(`Missed cache for ${protocol} ${attribute} on ${date}`);
 
   const value = await queryAdapter(protocol, attribute, date);
-  await setDBValue(protocol, attribute, date, value);
+
+  if (value > SANITY_CHECK) {
+    console.warn(`Query for ${protocol} on ${date} returned ${value}, exceeded sanity check`);
+    return null;
+  }
+
+  if (value) {
+    await setDBValue(protocol, attribute, date, value);
+  }
   return value;
 }
 
@@ -40,7 +50,18 @@ export async function getData(): Promise<ProtocolData[]> {
     console.warn(e);
     return null;
   };
-  const runAdapter = (adapter: any) => adapter().catch(handleFailure);
+  const yesterday = getYesterdayDate();
+  const runAdapter = (adapter: any) =>
+    adapter()
+      .then(async (data: FeeData) => {
+        // Let's start saving legacy data, in 1 week we'll be good to show some charts
+        const cachedValue = await getDBValue(data.id, 'fee', yesterday);
+        if (!cachedValue) {
+          await setDBValue(data.id, 'fee', yesterday, data.oneDay);
+        }
+        return data;
+      })
+      .catch(handleFailure);
   const [...appData] = await Promise.all(adapters.map(runAdapter));
 
   const days = last7Days();
@@ -61,6 +82,10 @@ export async function getData(): Promise<ProtocolData[]> {
           return null;
         }
         const sevenDayMA = feeForDay.reduce((a: number, b: number) => a + b, 0) / 7;
+        if (!sevenDayMA || !feeForDay[feeForDay.length - 1]) {
+          console.warn(`Missing data for ${id}`);
+          return null;
+        }
 
         const { price, marketCap, psRatio } = await getMarketData(id, sevenDayMA, days[6]);
 
@@ -161,11 +186,16 @@ export async function getLastWeek(): Promise<any[]> {
 }
 
 export async function getDateData(protocol: string, date: string) {
+  const { protocolLaunch } = getMetadata(protocol);
+  if (protocolLaunch && isBefore(date, protocolLaunch)) {
+    return { date, fee: null };
+  }
+
   return {
     date,
     fee: await getValue(protocol, 'fee', date).catch((e: any) => {
       console.error(e);
-      return 0;
+      return null;
     }),
   };
 }

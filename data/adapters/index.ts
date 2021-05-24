@@ -1,6 +1,7 @@
+import registerAave from './aave';
 import registerAvalanche from './avalanche';
 import registerBalancer from './balancer';
-import { getBancorData } from './bancor';
+import registerBancor from './bancor';
 import registerBSC from './bsc';
 import registerCoinMetrics from './coinmetrics';
 import registerCompound from './compound';
@@ -13,28 +14,20 @@ import registerLinkswap from './linkswap';
 import registerMaker from './maker';
 import { getOmenData } from './omen';
 import register0x from './zerox';
+import registerMstable from './mStable';
+import registerPolygon from './polygon';
+import registerPolymarket from './polymarket';
 import registerRen from './ren';
 import registerSushiswap from './sushi';
 import registerSynthetix from './synthetix';
-// import { getPolymarketData } from './polymarket';
 import registerPolkadot from './polkadot';
-import { getMstableData } from './mStable';
 import registerTBTC from './tbtc';
 import registerTerra from './terra';
 import registerTornado from './tornado';
 import registerUniswap from './uniswap';
-import { getAaveData } from './aave';
-import { getZilliqaData } from './zilliqa';
+import registerZilliqa from './zilliqa';
 
-export const adapters = [
-  getAaveData,
-  getBancorData,
-  getFutureswapData,
-  getOmenData,
-  // getPolymarketData,
-  getMstableData,
-  getZilliqaData,
-];
+export const adapters = [getFutureswapData, getOmenData];
 
 interface Adapter {
   query: any;
@@ -50,8 +43,10 @@ const register = (id: string, query: any, metadata: any) => {
 };
 
 register0x(register);
+registerAave(register);
 registerAvalanche(register);
 registerBalancer(register);
+registerBancor(register);
 registerBSC(register);
 registerCoinMetrics(register);
 registerCompound(register);
@@ -60,8 +55,11 @@ registerHegic(register);
 registerHoneyswap(register);
 registerLinkswap(register);
 registerMaker(register);
+registerMstable(register);
 registerQuickswap(register);
 registerPolkadot(register);
+registerPolygon(register);
+registerPolymarket(register);
 registerRen(register);
 registerSushiswap(register);
 registerSynthetix(register);
@@ -69,6 +67,7 @@ registerTBTC(register);
 registerTerra(register);
 registerTornado(register);
 registerUniswap(register);
+registerZilliqa(register);
 
 export const getIDs = () => ids;
 

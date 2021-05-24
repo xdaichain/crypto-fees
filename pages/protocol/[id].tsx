@@ -80,6 +80,14 @@ function saveFeeData(response: any, storedFees: any) {
   }
 }
 
+const emptyData = ({ start, end }: { start: Date; end: Date }) => {
+  const data = [];
+  for (let date = start; !isAfter(date, end); date = addDays(date, 1)) {
+    data.push({ date: date.getTime() / 1000, primary: null, secondary: null });
+  }
+  return data;
+};
+
 const useFees = (
   initial: any,
   dateRange: { start: Date; end: Date },
@@ -91,7 +99,7 @@ const useFees = (
 
   const [value, setValue] = useState({
     loading: false,
-    data: [],
+    data: emptyData(dateRange),
   });
 
   useEffect(() => {
@@ -223,6 +231,8 @@ export const ProtocolDetails: NextPage<ProtocolDetailsProps> = ({
         {metadata.name}
       </h2>
 
+      {metadata.legacy && <div className="legacy">Some historical data may be unavailable</div>}
+
       <ChartToolbar
         range={dateRange}
         onRangeChange={setDateRange}
@@ -334,6 +344,14 @@ export const ProtocolDetails: NextPage<ProtocolDetailsProps> = ({
           background-position: center;
           background-size: contain;
           margin-right: 8px;
+        }
+        .legacy {
+          font-size: 12px;
+          color: #666;
+          margin: 4px 0;
+          padding: 6px;
+          background: #f3e8d4;
+          border-radius: 4px;
         }
       `}</style>
     </main>
